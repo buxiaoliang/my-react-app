@@ -14,6 +14,7 @@ export default class InvitationDialog extends React.Component {
   state = {
     open: false,
     status: 'Send',
+    fullname: '',
     email: '',
     errorFullname: '',
     errorEmail: '',
@@ -31,20 +32,32 @@ export default class InvitationDialog extends React.Component {
 
   handleSend = () => {
     var self = this;
-    this.setState({ status: 'Sending, please wait.' });
-    axios.post('https://l94wc2001h.execute-api.ap-southeast-2.amazonaws.com/prod/fake-auth', {
-      name: 'Fred',
-      // usedemail@airwallex.com
-      email: 'usedemail@airwallex.com'
-    })
-    .then(function (response) {
-      self.setState({ status: 'All Done.' });
-      console.log(response);
-    })
-    .catch(function (error) {
-      self.setState({ status: error.message });
-      console.log(error);
-    });
+    if (this.state.errorFullname === '' && this.state.errorEmail === '' && this.state.errorConfirmEmail === '') {
+      this.setState({ status: 'Sending, please wait.' });
+      axios.post('https://l94wc2001h.execute-api.ap-southeast-2.amazonaws.com/prod/fake-auth', {
+        name: self.state.fullname,
+        // will throw error: usedemail@airwallex.com
+        email: self.state.email
+      })
+      .then(function (response) {
+        self.setState({ status: 'All Done.' });
+        console.log(response);
+      })
+      .catch(function (error) {
+        self.setState({ status: error.message });
+        console.log(error);
+      });
+    }
+  };
+
+  handleChangeFullname = (e) => {
+    var fullname = e.target.value;
+    this.setState({ fullname: fullname });
+  };
+
+  handleChangeEmail = (e) => {
+    var email = e.target.value;
+    this.setState({ email: email });
   };
 
   validateFullname = (e) => {
@@ -62,7 +75,6 @@ export default class InvitationDialog extends React.Component {
     if (!re.test(String(email).toLowerCase())) {
       this.setState({ errorEmail: 'Email needs to be invalidation email format.' });
     } else {
-      this.setState({ email: email});
       this.setState({ errorEmail: '' });
     }
   }
@@ -100,19 +112,21 @@ export default class InvitationDialog extends React.Component {
                 type="text"
                 id="fullname"
                 autoComplete="current-fullname"
-                onBlur={this.validateFullname}
+                onBlur={this.validateFullname.bind(this)}
+                onChange={this.handleChangeFullname.bind(this)}
+                value={this.state.fullname}
                 autoFocus
               />
               <FormHelperText id="fullname-error-text">{this.state.errorFullname}</FormHelperText>
             </FormControl>
             <FormControl margin="normal" fullWidth error={this.state.errorEmail.length === 0 ? false : true }>
               <InputLabel htmlFor="email">Email</InputLabel>
-              <Input id="email" name="email" autoComplete="email" onBlur={this.validateEmail}/>
+              <Input id="email" name="email" autoComplete="email" onChange={this.handleChangeEmail.bind(this)} onBlur={this.validateEmail.bind(this)} value={this.state.email}/>
               <FormHelperText id="email-error-text">{this.state.errorEmail}</FormHelperText>
             </FormControl>
             <FormControl margin="normal" fullWidth error={this.state.errorConfirmEmail.length === 0 ? false : true }>
               <InputLabel htmlFor="confirm-email">Confirm Email</InputLabel>
-              <Input id="confirm-email" name="confirm-email" autoComplete="confirm-email" onBlur={this.validateConfirmEmail}/>
+              <Input id="confirm-email" name="confirm-email" autoComplete="confirm-email" onBlur={this.validateConfirmEmail.bind(this)}/>
               <FormHelperText id="confirm-email-error-text">{this.state.errorConfirmEmail}</FormHelperText>
             </FormControl>
             <Button
