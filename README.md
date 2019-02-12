@@ -1,5 +1,5 @@
-# algorithm
-algorithm examples
+# my react app
+my react app
 
 ## How to run
 yarn start
